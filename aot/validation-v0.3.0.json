@@ -1,0 +1,42 @@
+{
+  "version": "v0.3.0",
+  "framework_commit": "52dd4dffbc3aa0a8ac852cf9754181006aa7f2cc",
+  "platforms": [
+    "windows-x64",
+    "linux-x86_64"
+  ],
+  "game_images": 49,
+  "archive_images": 47,
+  "minigame_images": 2,
+  "recipes": 50,
+  "pairs_per_platform": 52,
+  "manifest_rows_per_platform": 12727,
+  "loader_entries_verified_per_platform": 49,
+  "full_static_coverage_proven": false,
+  "excluded_members": [
+    "0x185",
+    "0x1b0"
+  ],
+  "source": "Original disc files and loader instructions; no runtime capture inputs",
+  "checks": [
+    "14 shared method tests passed",
+    "4 Ape CTest checks passed",
+    "Windows ZIP audit hashes verified",
+    "Linux AppImage seeding and audit hashes verified",
+    "Windows attract-demo gameplay with runtime compilation disabled",
+    "Linux title screen with runtime compilation disabled"
+  ],
+  "gameplay_spot_checks": "Awaiting owner",
+  "artifacts": [
+    {
+      "name": "ApeEscapeRecomp-v0.3.0-windows-x64.zip",
+      "sha256": "91e2cde5f16408ff51b4b822ebba8b811c4e591263170cb49f33a486606c58e9",
+      "bytes": 37806136
+    },
+    {
+      "name": "ApeEscapeRecomp-v0.3.0-linux-x86_64.AppImage",
+      "sha256": "f086467ace20f816bd90dced79c4d92d8962cd076296cdb0469f41b06f36b3d6",
+      "bytes": 44141048
+    }
+  ]
+}

@@ -32,7 +32,8 @@ check_dir()  { [ -d "$data_dir/$1" ] || { echo "MISSING dir:  $1" >&2; fail=1; }
 
 for d in saves cache mods mods/bundled assets bios; do check_dir "$d"; done
 for f in game.toml input.ini START_HERE.txt LICENSE README.md \
-         bios/openbios.bin bios/OpenBIOS.LICENSE .appimage-layout-version; do
+         bios/openbios.bin bios/OpenBIOS.LICENSE .appimage-layout-version \
+         docs/AOT_OVERLAYS.md AOT_CACHE_AUDIT.json; do
     check_file "$f"
 done
 
@@ -48,7 +49,7 @@ if [ "$legacy_packages" -ne 0 ]; then
     fail=1
 fi
 package_dirs=$(find "$data_dir/mods/bundled" -mindepth 1 -maxdepth 1 -type d | wc -l)
-manifests=$(find "$data_dir/mods/bundled" -mindepth 2 -maxdepth 2 -name manifest.toml | wc -l)
+manifests=$(find "$data_dir/mods/bundled" -mindepth 3 -maxdepth 3 -name manifest.toml | wc -l)
 if [ "$package_dirs" -eq 0 ] || [ "$manifests" -ne "$package_dirs" ]; then
     echo "seeded mod catalog has $package_dirs package dir(s) and $manifests manifest(s)" >&2
     fail=1

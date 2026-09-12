@@ -16,6 +16,13 @@ with [PSXRecomp](https://github.com/mstan/psxrecomp) — the same framework behi
 
 Known issues live in [`ISSUES.md`](ISSUES.md).
 
+Releases precompile 47 archive overlays and two minigame executables directly
+from the original disc using the shared psxrecomp AOT pipeline. See
+[AOT overlay evidence and limits](docs/AOT_OVERLAYS.md) and the
+[shared method guide](psxrecomp-v4/docs/AOT_SHARDING.md). Two unresolved archive
+members remain excluded; fallback stays enabled and complete static coverage
+is not claimed.
+
 ## What This Is
 
 This repository contains the game-specific configuration, seeds, tools, and
@@ -43,7 +50,7 @@ Important files:
 
 ## Status
 
-**Playable preview — `v0.2.1`.** Ape Escape **boots from the PS1 BIOS and
+**Playable preview — `v0.3.0`.** Ape Escape **boots from the PS1 BIOS and
 plays** — through the intro, the title, and into gameplay, with dual-analog
 controller input including **L3/R3 stick clicks** (added in v0.0.3), a
 **controls fix** so the analog stick no longer spins the camera (v0.0.5),

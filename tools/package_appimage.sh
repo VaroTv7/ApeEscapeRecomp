@@ -9,11 +9,9 @@
 #   packaging/release/input.ini    the default controller mapping
 #   packaging/release/START_HERE.txt
 #
-# Overlay cache releases are also expected to share capture evidence:
-# Windows and Linux shards must be rebuilt for their own platform, but both
-# should be compiled from the same validated overlay_captures.json manifest.
-# Do not copy Windows .dll shards into an AppImage; rebuild .so shards from
-# that manifest with compile_overlays.py.
+# Every release freshly extracts, compiles and audits its original-disc AOT
+# inventory. Runtime captures and previous native caches are never inputs.
+# --skip-build only skips the runtime build; AOT extraction remains mandatory.
 #
 # Reproducibility:
 #   * the version is never hardcoded here or in AppRun (AppRun's marker is
@@ -315,14 +313,12 @@ fi
 # The cache namespace and toolchain layout are framework-owned. The cache source
 # root is the parent of the per-game directory, matching compile_overlays.py
 # --out-dir and the Windows packager.
-cache_src_root=${OVERLAY_CACHE_DIR:-"$root/build-linux-cache/cache"}
-case "$cache_src_root" in
-    *QUARANTINE*) echo "refusing quarantined overlay cache source: $cache_src_root" >&2; exit 1 ;;
-esac
-psx_add_overlay_cache --game-id "$game_id" \
-                      --cache-src-root "$cache_src_root" \
-                      --stage "$payload" \
-                      --cg-tag "$cg_tag"
+python3 "$fw/tools/aot_overlay_pipeline.py" release \
+    --profile "$root/aot/overlays.json" --game-toml "$root/game.toml" \
+    --runtime-config "$player_toml" --runtime-build-dir "$build_dir" \
+    --runtime-target psx-runtime --recompiler "$recompiler_bin" \
+    --work-dir "$root/build-aot-linux" --stage "$payload" \
+    --gcc "${AOT_GCC:-gcc}" --workers "${AOT_WORKERS:-3}"
 psx_add_overlay_toolchain --stage "$payload" \
                           --recomp-dir "$(dirname -- "$recompiler_bin")" \
                           --recomp-tools "$fw/tools" \
@@ -333,6 +329,8 @@ cp "$player_toml" "$payload/game.toml"
 cp "$root/packaging/release/input.ini"      "$payload/input.ini"
 cp "$root/packaging/release/START_HERE.txt" "$payload/START_HERE.txt"
 cp "$root/LICENSE" "$root/README.md" "$payload/"
+mkdir -p "$payload/docs"
+cp "$root/docs/AOT_OVERLAYS.md" "$payload/docs/"
 
 # recomp-ui resolves fonts/textures through SDL_GetBasePath(), which points at
 # the real ELF inside the mount rather than psxrecomp's writable argv[0] anchor.

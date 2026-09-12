@@ -220,79 +220,18 @@ def check_contract(repo, fw):
         if needle in text:
             fail("no-duplicate-toolchain", "packager %s (%r)" % (why, needle))
 
-    # -- the tag must come from the tool that owns the cache layout ---------
-    if "Get-OverlayCgTag" not in text:
-        fail("tag-from-module",
-             "packager does not call Get-OverlayCgTag; the cache tag must come "
-             "from compile_overlays.cache_tag(), never from a local format string")
-    for bad in LOCAL_TAG_FORMATS:
-        if bad in text:
-            fail("tag-from-module",
-                 "packager formats the cache tag itself (%r). Every field added "
-                 "to the tag since -- _gc<config-hash>, _f<flavor> -- was added "
-                 "without the copies following, and each time the filter matched "
-                 "nothing and a valid cache staged ZERO shards" % bad)
-
-    # The tag folds in a hash of the game.toml, so it must be derived from the
-    # STAGED config. Derived from the dev config it names a namespace the
-    # shipped runtime never reads, and nothing complains.
-    # Join PowerShell backtick line continuations first: the call spans several
-    # lines, and a regex that tries to walk them inline silently matched only
-    # the first one and then reported "cannot find -GameToml" on a call that
-    # plainly had it.
-    joined = re.sub(r"`[ \t]*\r?\n[ \t]*", " ", text)
-    m = re.search(r"Get-OverlayCgTag[^\n]*", joined)
-    if m:
-        call = m.group(0)
-        gm = re.search(r"-GameToml\s+(\$[A-Za-z_][A-Za-z0-9_]*|\([^)]*\))", call)
-        if not gm:
-            fail("tag-from-staged-config",
-                 "cannot find -GameToml on the Get-OverlayCgTag call")
-        else:
-            arg = gm.group(1)
-            expr = arg
-            if arg.startswith("$"):
-                am = re.search(re.escape(arg) + r"\s*=\s*([^\n]+)", text)
-                expr = am.group(1) if am else ""
-            if "$Stage" not in expr:
-                fail("tag-from-staged-config",
-                     "Get-OverlayCgTag -GameToml resolves to %r, which does not "
-                     "reference $Stage. The tag hashes the game.toml, so a tag "
-                     "derived from the DEV config names a cache namespace the "
-                     "shipped runtime never scans." % expr.strip())
-
-    # -- a declared cache is mandatory, with no way out --------------------
-    dev_toml = os.path.join(repo, "game.toml")
-    declared = os.path.isfile(dev_toml) and declares_overlay_cache(dev_toml)
-    if declared:
-        if not re.search(r"\bAdd-OverlayCache\b", text):
-            fail("cache-staged",
-                 "game.toml declares [runtime] overlay_cache = true but the "
-                 "packager never calls Add-OverlayCache, so the shipped runtime "
-                 "scans cache/ on every launch and finds nothing")
-        # No escape hatch. This project has shipped four separate incomplete
-        # packages by warning instead of throwing; a switch that turns the throw
-        # off is the same defect with a flag on it.
-        if "AllowNoCache" in text:
-            fail("no-escape-hatch",
-                 "packager exposes/forwards AllowNoCache. A title that declares "
-                 "overlay_cache must ship a cache or fail; there is no "
-                 "deliberate-downgrade path")
-        for i, l in enumerate(lines):
-            if re.search(r"Write-Warning", l) and re.search(r"cache", l, re.I):
-                fail("cache-required",
-                     "line %d warns about the overlay cache instead of failing: "
-                     "%s" % (i + 1, l.strip()))
-
-    # -- quarantined caches are never an input -----------------------------
-    # A quarantined cross-version cache can carry the SAME cg tag as a good one
-    # (measured: cg10_a4319b6f_gcc31ae4a9_f0 on both, 6 of 50 shard filenames in
-    # common) so the tag filter cannot reject it. Only the path can.
-    if "QUARANTINE" not in text:
-        fail("refuse-quarantine",
-             "packager does not refuse a cache source path containing "
-             "QUARANTINE. A matching cg tag does NOT prove compatibility, so "
-             "the path is the only signal left")
+    # Both platform entrypoints must run the shared fresh extraction and audit.
+    for filename in ('package_release.ps1', 'package_appimage.sh'):
+        path = os.path.join(repo, 'tools', filename)
+        with open(path, encoding='utf-8') as stream:
+            code = stream.read()
+        for required in ('aot_overlay_pipeline.py', 'overlays.json', '--runtime-config',
+                         '--runtime-build-dir', '--stage'):
+            if required not in code:
+                fail('original-disc-aot', filename + ' missing ' + required)
+        for forbidden in ('CacheBuildDir', 'OVERLAY_CACHE_DIR', 'AllowNoCache'):
+            if forbidden in code:
+                fail('original-disc-aot', filename + ' permits ' + forbidden)
 
     # -- never bare `python` -----------------------------------------------
     # Bare `python` here resolves to the cygwin interpreter, which SIGSEGVs
@@ -334,17 +273,16 @@ def check_module(fw):
             fail("module-present",
                  "shared module does not define %s; the framework pin is too "
                  "old for this packager" % fn)
-    m = re.search(r"Add-OverlayCache.*?-Include\s+([^\n|]+)", text, re.S)
-    if not m:
-        fail("module-include-list",
-             "cannot find Add-OverlayCache's -Include list in the shared module")
-    else:
-        inc = m.group(1)
-        for banned in (".c", ".ok", ".pair-lock"):
-            if ("*%s" % banned) in inc:
-                fail("module-include-list",
-                     "shared module's cache -Include list admits *%s: %s"
-                     % (banned, inc.strip()))
+    # The wrappers now delegate artifact classification to shared Python.
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('release_stage', os.path.join(fw, 'tools', 'release_stage.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    for name in ('unit.c', '.abi_123.ok', 'unit.pair-lock', '.unit.tmp.dll'):
+        if module._forbidden_reason(name) is None:
+            fail('module-include-list', 'Shared classifier admits ' + name)
+    if set(module._shippable_suffixes('.dll')) != {'.dll', '.ranges', '.resident'}:
+        fail('module-include-list', 'Unexpected shared artifact suffixes')
     note("module: checked %s" % mod)
 
 
