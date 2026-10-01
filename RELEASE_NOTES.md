@@ -1,3 +1,24 @@
+# Ape Escape Recompiled - v0.3.1
+
+- Fixes the gameplay slowdown in Primordial Ooze reported in #18. The
+  original-disc AOT scanner now recognizes functions with instructions before
+  stack setup and delayed return-address saves, so these level functions ship
+  as native code.
+- Rebuilds and audits the original-disc overlay caches for Windows and Linux.
+  This fixes the confirmed coverage gap; complete static coverage and a full
+  playthrough are not claimed.
+- Refreshes bundled Linux cache files when upgrading, so existing installations
+  receive the corrected level code while retaining saves and settings.
+
+---
+
+# Ape Escape Recompiled - v0.3.0
+
+- Ships precompiled code for 47 original-disc archive overlays and two minigame
+  executables, with a verified source inventory and cache audit on both platforms.
+
+---
+
 # Ape Escape Recompiled - v0.2.1
 
 - Replaces the removed Frame Rate package with default-off **Ape Escape Frame
