@@ -7,6 +7,8 @@
 - Rebuilds and audits the original-disc overlay caches for Windows and Linux.
   This fixes the confirmed coverage gap; complete static coverage and a full
   playthrough are not claimed.
+- Refreshes bundled Linux cache files when upgrading, so existing installations
+  receive the corrected level code while retaining saves and settings.
 
 ---
 
