@@ -1,3 +1,11 @@
+# v0.4.0
+
+Game-code interpolation replaces Frame Smoothing while retaining saved rate selections. Adds internal-resolution presets, PGXP geometry/perspective correction and filtering options. Fixes the GPU foreground classification behind flickering black wall polygons. The memory-card menu uses its native layout in widescreen. Late beach-ball appearance remains under investigation.
+
+Enable the frame-rate and widescreen enhancements in Mods. Native game timing remains unchanged. These are playable preview builds; full-game completion is not recertified.
+
+---
+
 # Ape Escape Recompiled - v0.3.1
 
 - Fixes the gameplay slowdown in Primordial Ooze reported in #18. The

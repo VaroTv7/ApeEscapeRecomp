@@ -18,6 +18,8 @@ bios_config = "psxrecomp-v4/bios/SCPH1001.toml"
 # bios_thunks = "seeds/apeescape_bios_thunks.txt"  # optional; add once BIOS thunks are inventoried
 out_dir = "generated"
 strict = true
+mod_function_entry_funcs = ["0x8005DEE0"]
+mod_instruction_sites = ["0x8005C078"]
 
 [runtime]
 debug_port = 4480
@@ -49,14 +51,18 @@ offer_frame_interpolation = false
 # GL compositor perf fix). The launcher's Renderer setting still offers Software.
 renderer = "opengl"
 
-# Ship 2x SSAA with present antialiasing enabled. Aligned RTX/OpenGL testing
-# found 2x and 4x stayed within the 59.94 Hz budget in the sampled attract
-# scene, but that is not yet a full-playthrough guarantee. 3x/4x SSAA and
-# bilinear texture filtering (which changes the authored PSX texture look)
-# remain opt-in.
-supersampling = 2
+# Settings > Display exposes Native, 720p, 1080p, 1440p, 4K, 5K, 8K and
+# Match display. Start with the same 4K preset as Spider-Man; players can
+# lower it to leave more rendering time for intermediate frames.
+internal_resolution = "4k"
 antialiasing = true
-texture_filtering = "nearest"
+texture_filtering = "bilinear"
+fmv_filter = "bicubic"
+# The bundled PGXP mod owns both correction toggles, including its Off state.
+geometry_correction = false
+perspective_texturing = false
+pgxp_cpu_mode = true
+pgxp_tolerance = 1.0
 
 # Authentic 4:3 is the baseline. Ape Escape's game-specific widescreen modes
 # are selected from the built-in Mods catalog rather than generic Video settings.

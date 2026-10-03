@@ -214,7 +214,7 @@ if [ "$skip_build" = "0" ]; then
     # otherwise identical builds differ.
     cmake -S "$root" -B "$build_dir" -G "$generator" \
         -DCMAKE_BUILD_TYPE=Release \
-        -DPSX_SDL_BACKEND=SDL2 \
+        -DPSX_SDL_BACKEND=SDL3 \
         -DPSX_DEBUG_TOOLS=OFF \
         -DCMAKE_EXE_LINKER_FLAGS="-Wl,--build-id=none"
     cmake --build "$build_dir" --target psx-runtime -j "$jobs"
@@ -305,9 +305,13 @@ psx_add_mod_catalog --build-path "$build_dir" --stage "$payload" \
 [ -f "$payload/bios/OpenBIOS.LICENSE" ] || { echo "missing OpenBIOS notice" >&2; exit 1; }
 
 mkdir -p "$payload/licenses"
-if [ -f "$fw/runtime/licenses/libchdr-NOTICES.txt" ]; then
-    cp "$fw/runtime/licenses/libchdr-NOTICES.txt" "$payload/licenses/"
-fi
+cp -a "$fw/runtime/licenses/." "$payload/licenses/"
+[ ! -f "$fw/THIRD_PARTY_ATTRIBUTION.md" ] || cp "$fw/THIRD_PARTY_ATTRIBUTION.md" "$payload/licenses/"
+cp "$fw/LICENSE" "$payload/licenses/psxrecomp-LICENSE"
+[ ! -f "$root/recomp-ui/LICENSE" ] || cp "$root/recomp-ui/LICENSE" "$payload/licenses/recomp-ui-LICENSE"
+for doc in VERSION RELEASE_NOTES.md framework_pins.txt BUILD_PROVENANCE.json; do
+    [ ! -f "$root/$doc" ] || cp "$root/$doc" "$payload/"
+done
 
 # --- prebuilt overlay cache + overlay toolchain ---------------------------
 # The cache namespace and toolchain layout are framework-owned. The cache source
@@ -318,7 +322,7 @@ python3 "$fw/tools/aot_overlay_pipeline.py" release \
     --runtime-config "$player_toml" --runtime-build-dir "$build_dir" \
     --runtime-target psx-runtime --recompiler "$recompiler_bin" \
     --work-dir "$root/build-aot-linux" --stage "$payload" \
-    --gcc "${AOT_GCC:-gcc}" --workers "${AOT_WORKERS:-3}"
+    --gcc "${AOT_GCC:-gcc}" --workers "${AOT_WORKERS:-$jobs}"
 psx_add_overlay_toolchain --stage "$payload" \
                           --recomp-dir "$(dirname -- "$recompiler_bin")" \
                           --recomp-tools "$fw/tools" \
