@@ -1,3 +1,7 @@
+# v0.5.3: audited native execution
+
+Select audited native SDK waits by default in enhanced builds. Preserve the existing gameplay-only cycle-scale gate, source-built renderer, controller requirements and current mod defaults. Refresh generated code and original-disc overlay cache for framework ABI 35. Current opening-level movement and current-build save/load pass; final package timings are not extrapolated from the earlier prototype. A separate options-menu load watchdog remains under baseline classification.
+
 # v0.5.2
 
 v0.5.1's crowded-scene fix sped up all game code, which also made menus and

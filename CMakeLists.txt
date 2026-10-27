@@ -43,7 +43,7 @@ file(GLOB APE_MOD_PLUGIN_SOURCES CONFIGURE_DEPENDS
 # "Mod catalog is missing package(s) the sources define". Bead beads-eio.3.101.
 set(APE_PRELOADED_MODS "${CMAKE_CURRENT_SOURCE_DIR}/mods/preloaded")
 
-option(APE_NATIVE_IDLE_WAIT "Select the audited native PsyQ frame wait for evaluation" OFF)
+option(APE_NATIVE_IDLE_WAIT "Select the audited native frame wait" ON)
 set(APE_NATIVE_IDLE_WAIT_SITES "")
 if(APE_NATIVE_IDLE_WAIT)
     if(NOT COMMAND psxrecomp_native_idle_wait)
