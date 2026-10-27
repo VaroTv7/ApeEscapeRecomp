@@ -136,8 +136,10 @@ if(BUILD_TESTING)
     find_package(Python3 REQUIRED COMPONENTS Interpreter)
     add_test(NAME ape_vwait_contract_test
         COMMAND "${Python3_EXECUTABLE}"
-                "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_vwait_contract.py"
-                --framework "${PSXRECOMP_ROOT}" --cc "${CMAKE_C_COMPILER}")
+                "${PSXRECOMP_ROOT}/runtime/tests/native_wait_caller.py"
+                --framework "${PSXRECOMP_ROOT}" --cc "${CMAKE_C_COMPILER}"
+                --generated "${CMAKE_CURRENT_SOURCE_DIR}/generated"
+                --contract "${CMAKE_CURRENT_SOURCE_DIR}/tests/vwait_contract.json")
     set_tests_properties(ape_vwait_contract_test PROPERTIES SKIP_RETURN_CODE 77 RUN_SERIAL TRUE)
     add_test(
         NAME ape_release_overlay_staging_test
