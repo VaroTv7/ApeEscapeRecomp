@@ -35,7 +35,7 @@ void no_op_plugin() {}
 }  // namespace
 
 int main(int argc, char** argv) {
-    if (argc != 2) return fail("expected the preloaded mods root");
+    if (argc != 3) return fail("expected preloaded and development mods roots");
 
     const fs::path source(argv[1]);
     const fs::path root =
@@ -43,6 +43,12 @@ int main(int argc, char** argv) {
     std::error_code ec;
     fs::remove_all(root, ec);
     fs::copy(source, root, fs::copy_options::recursive);
+    if (fs::exists(source / "packages/ape.enhancement.frame-smoothing"))
+        return fail("frame smoothing must stay outside the active catalog");
+    // Keep exercising the preserved development implementation without
+    // shipping it or exposing interpolation in the owner's playtest.
+    fs::copy(fs::path(argv[2]) / "packages", root / "packages",
+             fs::copy_options::recursive);
 
     size_t manifest_count = 0;
     for (const fs::directory_entry& entry :

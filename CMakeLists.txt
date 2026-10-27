@@ -43,8 +43,20 @@ file(GLOB APE_MOD_PLUGIN_SOURCES CONFIGURE_DEPENDS
 # "Mod catalog is missing package(s) the sources define". Bead beads-eio.3.101.
 set(APE_PRELOADED_MODS "${CMAKE_CURRENT_SOURCE_DIR}/mods/preloaded")
 
+option(APE_NATIVE_IDLE_WAIT "Select the audited native PsyQ frame wait for evaluation" OFF)
+set(APE_NATIVE_IDLE_WAIT_SITES "")
+if(APE_NATIVE_IDLE_WAIT)
+    if(NOT COMMAND psxrecomp_native_idle_wait)
+        message(FATAL_ERROR "APE_NATIVE_IDLE_WAIT needs a framework with native wait-policy support")
+    endif()
+    # SCUS-94423: v_wait, target counter 0x800A9BB0. One stack timeout
+    # decrement and two interrupt edges per pass; no other counter exits/MMIO.
+    set(APE_NATIVE_IDLE_WAIT_SITES 0x8002E6C0 0x8002E708)
+endif()
+
 psxrecomp_add_runtime_target(psx-runtime
     PGXP
+    NATIVE_IDLE_WAIT_SITES ${APE_NATIVE_IDLE_WAIT_SITES}
     GAME_GENERATED_FULL_C "${GAME_GENERATED_FULL}"
     GAME_GENERATED_DISPATCH_C "${GAME_GENERATED_DISPATCH}"
     EXTRAS_SOURCES ${APE_MOD_PLUGIN_SOURCES}
@@ -56,6 +68,8 @@ psxrecomp_add_runtime_target(psx-runtime
     # relative to the exe — and which now also accepts the region-qualified
     # "US-PSX-SCPH1001.BIN" spelling (recompiler/include/bios_rom_alias.h).
     DEFAULT_GAME_CONFIG_PATH "game.toml"
+    EXCLUDE_BUILTIN_MODS psx.enhancement.cd-speed psx.enhancement.fast-loading
+    AUDIT_MOD_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/mods/development"
     PRELOADED_MODS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/mods/preloaded"
     LAUNCHER_BOXART "${CMAKE_SOURCE_DIR}/recomp/launcher/boxart.tga"
     # Per-game executable name so each title's process is distinct (killing/
@@ -94,6 +108,7 @@ if(BUILD_TESTING)
         NAME ape_preloaded_mods_test
         COMMAND "$<TARGET_FILE:ape_preloaded_mods_test>"
                 "${CMAKE_CURRENT_SOURCE_DIR}/mods/preloaded"
+                "${CMAKE_CURRENT_SOURCE_DIR}/mods/development"
     )
 
     # Release overlay staging: the shard cache and the overlay toolchain.
@@ -119,6 +134,11 @@ if(BUILD_TESTING)
     # game's disc image and a full Release build and so cannot run in a bare
     # checkout.
     find_package(Python3 REQUIRED COMPONENTS Interpreter)
+    add_test(NAME ape_vwait_contract_test
+        COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_vwait_contract.py"
+                --framework "${PSXRECOMP_ROOT}" --cc "${CMAKE_C_COMPILER}")
+    set_tests_properties(ape_vwait_contract_test PROPERTIES SKIP_RETURN_CODE 77 RUN_SERIAL TRUE)
     add_test(
         NAME ape_release_overlay_staging_test
         COMMAND "${Python3_EXECUTABLE}"
