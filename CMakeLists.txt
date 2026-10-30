@@ -8,6 +8,18 @@ set(CMAKE_CXX_STANDARD 17)
 set(PSXRECOMP_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/psxrecomp-v4" CACHE PATH
     "Path to psxrecomp")
 
+# Use the engine's measured ordered batching tier for fresh enhanced builds.
+# Keep the original tier for fresh reference builds and honor an explicit
+# -DPSX_GL_BATCH_IMPL=LLE override. Use separate build directories per tier.
+if(PSX_EXECUTION_PROFILE STREQUAL "REFERENCE")
+    set(_ape_gl_batch_default "LLE")
+else()
+    set(_ape_gl_batch_default "HLE")
+endif()
+set(PSX_GL_BATCH_IMPL "${_ape_gl_batch_default}" CACHE STRING
+    "OpenGL textured batching: LLE or HLE")
+unset(_ape_gl_batch_default)
+
 include("${PSXRECOMP_ROOT}/runtime/runtime.cmake")
 
 # Current psxrecomp emits the large game translation unit as numbered shards
