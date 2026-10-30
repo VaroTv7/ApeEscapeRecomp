@@ -8,6 +8,8 @@ This build includes the combined qualified engine optimizations and uses the sha
 
 Automated gameplay validation for this release batch is limited to Ape Escape and Tomba 2. The other titles use build and package checks followed by owner visual approval; no per-title performance gain is claimed.
 
+# v0.5.3: audited native execution
+
 Select audited native SDK waits by default in enhanced builds. Preserve the existing gameplay-only cycle-scale gate, source-built renderer, controller requirements and current mod defaults. Refresh generated code and original-disc overlay cache for framework ABI 35. Current opening-level movement and current-build save/load pass; final package timings are not extrapolated from the earlier prototype. A separate options-menu load watchdog remains under baseline classification.
 
 # v0.5.2
