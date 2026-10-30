@@ -1,4 +1,12 @@
-# v0.5.3: audited native execution
+# Ape Escape release notes
+
+## v0.5.4 — shared optimization release
+
+Fresh settings enable Internal Resolution at 4x. The Mods selector offers 1x through 32x; saved choices are preserved, and GPU texture and memory limits still apply. Disabling the mod selects native resolution.
+
+This build includes the combined qualified engine optimizations and uses the shared release pipeline with selective runtime PGO. CD Speed and Fast Loading packages are excluded. Existing memory cards remain supported.
+
+Automated gameplay validation for this release batch is limited to Ape Escape and Tomba 2. The other titles use build and package checks followed by owner visual approval; no per-title performance gain is claimed.
 
 Select audited native SDK waits by default in enhanced builds. Preserve the existing gameplay-only cycle-scale gate, source-built renderer, controller requirements and current mod defaults. Refresh generated code and original-disc overlay cache for framework ABI 35. Current opening-level movement and current-build save/load pass; final package timings are not extrapolated from the earlier prototype. A separate options-menu load watchdog remains under baseline classification.
 
